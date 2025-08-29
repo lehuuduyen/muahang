@@ -35616,7 +35616,9 @@ to {
 }
 .component__home-slider .track img {
   width: 100%;
-  border-radius: 16px;
+  height: 300px;          /* chiều cao khung */
+  object-fit: cover;      /* cắt ảnh vừa khung */
+  object-position: center;  border-radius: 16px;
 }
 .component__home-slider .controller {
   text-align: center;

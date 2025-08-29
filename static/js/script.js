@@ -730,9 +730,3 @@ window.calTotalAfterDiscount = function (_$this) {
 
     formatNumber();
 };
-updateSubtotal()
-
-formatNumber()
-getCategoryProduct()
-getProduct()
-getProductAttribute()
