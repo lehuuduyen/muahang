@@ -26,6 +26,8 @@ function getProduct() {
         .then(response => response.json())
         .then(result => {
             if (result.code == "200") {
+                localStorage.setItem("products", JSON.stringify(result.data));
+
                 showProduct(result.data);
                 formatNumber()
 
@@ -62,7 +64,7 @@ function showProduct(products) {
             if (i % 2 === 0) {
                 temp = "mod_2"
             }
-            htmlProducts += `<div class="component__product-item-list item-list-498c8183-d3ab-48ba-a586-6917c1c5e27f grid-2 ${temp}"  data-product_title="${product.post_title}" data-product_id="${product.ID}" data-price_sale="${product.sale_price}" data-price="${product.price}" data-path="${product.image_id.path}" onclick="clickDetailProduct(this)"
+            htmlProducts += `<div class="component__product-item-list item-list-498c8183-d3ab-48ba-a586-6917c1c5e27f grid-2 ${temp}"  data-product_title="${product.post_title}" data-product_id="${product.ID}" data-price_sale="${product.sale_price}" data-price="${product.price}" data-attribute='${JSON.stringify(product.list_attribute)}' data-path="${product.image_id.path}" onclick="clickDetailProduct(this)"
                                             style="margin-bottom: 10px;">
                                             <div
                                                 class="component__touchable touch_905ad9b9-8f6f-4815-b3ff-0b76c365cc80 no-over">
@@ -152,7 +154,6 @@ function showProductCategory(data) {
         if (stt % lenght == 0) {
             htmlCategory += '</div>'
         }
-        console.log(htmlCategory);
 
     });
     if (stt % length !== 0) {
@@ -162,26 +163,11 @@ function showProductCategory(data) {
 
 
 }
-function getProductAttribute() {
-    fetch(API_URL + "/product/attribute")
-        .then(response => response.json())
-        .then(result => {
 
-            if (result.code == "200") {
-                localStorage.setItem("productAttribute", JSON.stringify(result.data));
-                console.log("onlgetProductAttribute");
-                showProductAttribute(result.data);
-            }
-        })
-        .catch(error => {
-            console.error("Error:", error);
-        });
-
-
-};
 
 
 function showProductAttribute(listAttribute) {
+    console.log(listAttribute)
     search = typeof search !== "undefined" ? search : "";
     var htmlAttribute = "";
     if (listAttribute.radio) {
@@ -245,6 +231,22 @@ function openDetailProduct(_this) {
     let price = _this.getAttribute("data-price_sale")
     let productId = _this.getAttribute("data-product_id");
     let popKey = _this.getAttribute("data-key")
+    let attribute = _this.getAttribute("data-attribute")
+    if(attribute){
+        showProductAttribute(JSON.parse(attribute))
+    }else{
+        var formState = JSON.parse(localStorage.getItem("formState")) || [];
+        var state = formState.find(function (s) {
+            return s.id == popKey;
+        });
+        var listProduct = JSON.parse(localStorage.getItem("products")) || [];
+        let listAttribute = listProduct.find(s => s.ID == state.productId);
+        showProductAttribute(listAttribute.list_attribute);
+        document.getElementById("pop-note").value = state.note
+
+    }
+    
+
     if (popKey) {
         document.querySelector(".class-delete").style.display = 'block';
         document.querySelector(".class-delete").innerHTML = `<button class="buy__item" onclick="openQuestion(${popKey})"
@@ -462,6 +464,7 @@ function openDetailOrder() {
                         <span
                             style="font-weight: 500; color: rgb(7, 112, 190); font-size: 14px;"></span> <span class="name"
                             style="font-size: 14px; font-weight: 500;">${item.title} </span> <span class="priceSmall">${item.priceSale}</span><br>
+                            <p> - ${item.note}</p>
                         <div class="component__card-description-bound"
                             style="color: rgb(54, 54, 54); margin-top: 4px;">`
         item.radioGroupsName.forEach(function (itemCheckBox) {
@@ -479,7 +482,7 @@ function openDetailOrder() {
                     class="origin-price number">
                     ${item.priceSale + item.totalElement}
                 </span></div>
-                <div class="edit-text" data-key="${item.id}" data-product_title="${item.title}" data-product_id="${item.productId}" data-price_sale="${item.priceSale}" data-price="${item.price}" data-path="${item.path}"
+                <div class="edit-text" data-key="${item.id}" data-product_title="${item.title}"  data-product_id="${item.productId}" data-price_sale="${item.priceSale}" data-price="${item.price}" data-path="${item.path}"
                     style="color: rgb(7, 112, 190);" onclick="restoreState('${item.id}',this)">
                     Edit
                 </div>
@@ -509,6 +512,9 @@ window.restoreState = function (stateId, _this) {
     var radios = document.querySelectorAll(".input-radio");
     var checkboxes = document.querySelectorAll(".input-checkbox");
     var formState = JSON.parse(localStorage.getItem("formState")) || [];
+    
+    console.log(listProduct)
+
     var state = formState.find(function (s) {
         return s.id == stateId;
     });
@@ -516,6 +522,7 @@ window.restoreState = function (stateId, _this) {
         alert("State not found!");
         return;
     }
+   
 
     // Reset trạng thái
     Array.prototype.forEach.call(radios, function (radio) {
